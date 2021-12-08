@@ -1,7 +1,7 @@
 // contracts/StampTokenSale.sol
 // STAMPSDAQ
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity 0.8.4;
 
 import "./OwnableInterface.sol";
 
@@ -26,7 +26,7 @@ contract ComissionManager is Ownable {
     * @param newGlobalComission - new comission value
     */
     function updateGlobalComission(uint16 newGlobalComission) public onlyOwner {
-        require(newGlobalComission > 0 && newGlobalComission <= 333);
+        require(newGlobalComission > 0 && newGlobalComission <= 333, "Given comission values are not supported");
         _globalComission = newGlobalComission;
     }
 
@@ -36,8 +36,8 @@ contract ComissionManager is Ownable {
     * @param comission - new comission value for owner
     */
     function setExclusiveComission(address to, uint16 comission) public onlyOwner {
-        require(to != address(0) && to != address(this));
-        require(comission > 0 && comission <= 333);
+        require(to != address(0) && to != address(this), "Insane given address");
+        require(comission > 0 && comission <= 333, "Given comission values are not supported");
         _exclusiveComissions[to] = comission;
     }
     /**
@@ -45,7 +45,7 @@ contract ComissionManager is Ownable {
     * @param payerAddress - address for which comission calculated
     */
     function getComission(address payerAddress) public view returns (uint256) {
-        require(payerAddress != address(0) && payerAddress != address(this));
+        require(payerAddress != address(0) && payerAddress != address(this), "Insane given address");
         if(_exclusiveComissions[payerAddress] != 0) {
             return _exclusiveComissions[payerAddress];
         } else {
@@ -58,7 +58,7 @@ contract ComissionManager is Ownable {
     * @param price - initial price for calculating
     */
     function getComissionedPrice(address payerAddress, uint256 price) public view returns (uint256) {
-        require(payerAddress != address(0) && payerAddress != address(this));
+        require(payerAddress != address(0) && payerAddress != address(this), "Insane given address");
         if(_exclusiveComissions[payerAddress] != 0) {
             return (_exclusiveComissions[payerAddress] * price / 10000) + price;
         } else {

@@ -1,7 +1,7 @@
 // contracts/StampTokenSale.sol
 // STAMPSDAQ
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity 0.8.4;
 
 import "./DestructibleInterface.sol";
 import "./StampToken.sol";
@@ -35,9 +35,9 @@ contract StampTokenSale is Ownable, Destructible {
     * @param price initial sales price
     */
     constructor(address nftAddress, uint256 tokenId, uint256 price) {
-        require(nftAddress != address(0) && nftAddress != address(this));
-        require(price > 0);
-        require(StampToken(nftAddress).ownerOf(tokenId) == msg.sender);
+        require(nftAddress != address(0) && nftAddress != address(this), "Insane address given");
+        require(price > 0, "Provide correct price");
+        require(StampToken(nftAddress).ownerOf(tokenId) == msg.sender, "This is not your token");
         _sideSales = (msg.sender != _addressSTAMPSDAQ);
         _tokenOwner = payable(msg.sender);
         _nftAddress = StampToken(nftAddress);
@@ -49,18 +49,18 @@ contract StampTokenSale is Ownable, Destructible {
     /**
     * @dev Complete offer and buy token
     */
-    function complete() public payable {
-        require(msg.sender != address(0) && msg.sender != address(this));
-        require(_completed == false);
+    function complete() validOwners public payable {
+        require(msg.sender != address(0) && msg.sender != address(this), "Something nasty!");
+        require(_completed == false, "Offer alrady completed");
         uint256 endPrice = 0;
         if(_sideSales != true) {
           endPrice = _price;
         } else {
           endPrice = ComissionManager(_comissionManager).getComissionedPrice(msg.sender, _price);
         }
-        require(msg.value >= endPrice);
-        require(StampToken(_nftAddress).ownerOf(_tokenId) == _tokenOwner);
-        require(StampToken(_nftAddress).getApproved(_tokenId) == address(this));
+        require(msg.value >= endPrice, "Too low value provided");
+        require(StampToken(_nftAddress).ownerOf(_tokenId) == _tokenOwner, "Token owner was changed");
+        require(StampToken(_nftAddress).getApproved(_tokenId) == address(this), "Token owner has not approved token");
         StampToken(_nftAddress).safeTransferFrom(_tokenOwner, msg.sender, _tokenId);
         uint256 rewardPoolDeposit = 0;
         if(_sideSales != true) {
@@ -89,10 +89,10 @@ contract StampTokenSale is Ownable, Destructible {
     * @dev Fallback features
     */
     receive() external payable {
-        require(false);
+        require(false, "Use complete method");
     }
 
     fallback() external payable {
-        require(false);
+        require(false, "Use complete method");
     }
 }

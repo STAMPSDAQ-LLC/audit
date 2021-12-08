@@ -1,10 +1,11 @@
 // contracts/Stamptoken
 // STAMPSDAQ
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity 0.8.4;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import {Concat, uintToString} from "./Helpers.sol";
 
 /**
  * @title StampToken
@@ -14,37 +15,12 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 contract StampToken is ERC721URIStorage {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
-
+    using Concat for string;
+    using uintToString for uint;
     /**
     * @dev Contract Constructor
     */
     constructor() ERC721("STAMPSDAQ-Stamp", "SSTMP") {}
-
-    /**
-    * @dev Helper function for concatenating string 'a' to string 'b' into 'ab'
-    */
-    function _concat(string memory a, string memory b) internal pure returns (string memory) {
-        return string(abi.encodePacked(a, b));
-    }
-    /**
-    * @dev Helper function for stringify integer values
-    */
-    function _uintToString(uint value) internal pure returns (string memory) {
-        uint maxlength = 40;
-        bytes memory reversed = new bytes(maxlength);
-        uint8 i = 0;
-        while (value != 0) {
-            uint remainder = value % 10;
-            value = value / 10;
-            reversed[i++] = bytes1(uint8(48 + remainder));
-        }
-        bytes memory s = new bytes(i + 1);
-        for (uint j = 0; j <= i; j++) {
-            s[j] = reversed[i - j];
-        }
-        return string(s);
-    }
-
     /**
     * @dev mints next in sequence token
     * @param owner - first token owner
@@ -57,7 +33,7 @@ contract StampToken is ERC721URIStorage {
         _tokenIds.increment();
         uint256 newItemId = _tokenIds.current();
         _mint(owner, newItemId);
-        _setTokenURI(newItemId, _concat(baseURI,_uintToString(newItemId)));
+        _setTokenURI(newItemId, baseURI._concat(newItemId._uintToString()));
         return newItemId;
     }
 
@@ -76,7 +52,7 @@ contract StampToken is ERC721URIStorage {
             _tokenIds.increment();
             itemId = _tokenIds.current();
             _mint(owner, itemId);
-            _setTokenURI(itemId, _concat(baseURI,_uintToString(itemId)));
+            _setTokenURI(itemId, baseURI._concat(itemId._uintToString()));
         }
         return itemId;
     }

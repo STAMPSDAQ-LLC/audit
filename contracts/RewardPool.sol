@@ -1,9 +1,10 @@
 // contracts/StampTokenSale.sol
 // STAMPSDAQ
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity 0.8.4;
 
 import "./DestructibleInterface.sol";
+import {stringCompare} from "./Helpers.sol";
 
 /**
  * @title RewardPool
@@ -24,13 +25,6 @@ contract RewardPool is Ownable, Destructible {
     string public constant _payoutTypeNFT = "nft";
     string public constant _payoutTypeTrivia = "trivia";
     bool public _filled;
-
-    /**
-    * @dev Hepler function to compare stringf values
-    */
-    function _compareStrings(string memory a, string memory b) internal pure returns (bool) {
-        return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))));
-    }
     /**
     * @dev Contract Constructor
     */
@@ -45,8 +39,9 @@ contract RewardPool is Ownable, Destructible {
     /**
     * @dev function to recieve and distrivute revard pool balance
     */
-    function fill() public payable {
-        require(msg.sender != address(0) && msg.sender != address(this));
+    function fill() external payable validOwners {
+        require(msg.value >= 0, "You need send founds");
+        require(msg.sender != address(0) && msg.sender != address(this), "Something nasty!");
         uint256 base25Percent = msg.value/4;
         _collectorPool = _collectorPool + base25Percent;
         _traderPool = _traderPool + base25Percent;
@@ -61,27 +56,27 @@ contract RewardPool is Ownable, Destructible {
     /**
     * @dev function for sending rewards
     */
-    function payReward(address payable payee, string memory payoutType, uint256 amount) public onlyOwner {
-        require(payee != address(0) && payee != address(this));
-        require(_filled);
-        if(_compareStrings(payoutType, _payoutTypeCollector)) {
-            require(_collectorPool >= amount);
+    function payReward(address payable payee, string memory payoutType, uint256 amount) external onlyOwner {
+        require(payee != address(0) && payee != address(this), "Insane addresses given");
+        require(_filled, "Pool is not ready to pay");
+        if(stringCompare._compareStrings(payoutType, _payoutTypeCollector)) {
+            require(_collectorPool >= amount, "Not enough funds!");
             _collectorPool = _collectorPool - amount;
             payee.transfer(amount);
             emit Sent(payee, _payoutTypeCollector, amount, address(this).balance);
 
-        } else if (_compareStrings(payoutType, _payoutTypeTrader)) {
-            require(_traderPool >= amount);
+        } else if (stringCompare._compareStrings(payoutType, _payoutTypeTrader)) {
+            require(_traderPool >= amount, "Not enough funds!");
             _traderPool = _traderPool - amount;
             payee.transfer(amount);
             emit Sent(payee, _payoutTypeTrader, amount, address(this).balance);
-        } else if (_compareStrings(payoutType, _payoutTypeNFT)) {
-            require(_nftPool >= amount);
+        } else if (stringCompare._compareStrings(payoutType, _payoutTypeNFT)) {
+            require(_nftPool >= amount, "Not enough funds!");
             _nftPool = _nftPool - amount;
             payee.transfer(amount);
             emit Sent(payee, _payoutTypeNFT, amount, address(this).balance);
         } else {
-            require(_triviaPool >= amount);
+            require(_triviaPool >= amount, "Not enough funds!");
             _triviaPool = _triviaPool - amount;
             payee.transfer(amount);
             emit Sent(payee, _payoutTypeTrivia, amount, address(this).balance);
@@ -91,10 +86,10 @@ contract RewardPool is Ownable, Destructible {
     * @dev Fallback features
     */
     receive() external payable {
-        require(false);
+        require(false, "Use fill method");
     }
 
     fallback() external payable {
-        require(false);
+        require(false, "Use fill method");
     }
 }
