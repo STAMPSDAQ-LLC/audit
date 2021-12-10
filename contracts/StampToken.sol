@@ -1,11 +1,11 @@
 // contracts/Stamptoken
 // STAMPSDAQ
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.4;
+pragma solidity 0.8.9;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-import {Concat, uintToString} from "./Helpers.sol";
+import {uintUtils, stringUtils} from "./Helpers.sol";
 
 /**
  * @title StampToken
@@ -15,8 +15,8 @@ import {Concat, uintToString} from "./Helpers.sol";
 contract StampToken is ERC721URIStorage {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
-    using Concat for string;
-    using uintToString for uint;
+    using stringUtils for string;
+    using uintUtils for uint;
     /**
     * @dev Contract Constructor
     */
@@ -33,7 +33,7 @@ contract StampToken is ERC721URIStorage {
         _tokenIds.increment();
         uint256 newItemId = _tokenIds.current();
         _mint(owner, newItemId);
-        _setTokenURI(newItemId, baseURI._concat(newItemId._uintToString()));
+        _setTokenURI(newItemId, baseURI.concat(newItemId.toString()));
         return newItemId;
     }
 
@@ -52,7 +52,7 @@ contract StampToken is ERC721URIStorage {
             _tokenIds.increment();
             itemId = _tokenIds.current();
             _mint(owner, itemId);
-            _setTokenURI(itemId, baseURI._concat(itemId._uintToString()));
+            _setTokenURI(itemId, baseURI.concat(itemId.toString()));
         }
         return itemId;
     }

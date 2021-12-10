@@ -1,10 +1,10 @@
 // contracts/StampTokenSale.sol
 // STAMPSDAQ
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.4;
+pragma solidity 0.8.9;
 
 import "./DestructibleInterface.sol";
-import {stringCompare} from "./Helpers.sol";
+import {stringUtils} from "./Helpers.sol";
 
 /**
  * @title RewardPool
@@ -14,7 +14,6 @@ contract RewardPool is Ownable, Destructible {
 
     event Sent(address indexed payee, string payoutType, uint256 amount, uint256 balance);
     event Received(address indexed payer, uint256 amount, uint256 balance);
-
     uint256 public _collectorPool;
     uint256 public _traderPool;
     uint256 public _nftPool;
@@ -25,6 +24,7 @@ contract RewardPool is Ownable, Destructible {
     string public constant _payoutTypeNFT = "nft";
     string public constant _payoutTypeTrivia = "trivia";
     bool public _filled;
+    using stringUtils for string;
     /**
     * @dev Contract Constructor
     */
@@ -59,18 +59,18 @@ contract RewardPool is Ownable, Destructible {
     function payReward(address payable payee, string memory payoutType, uint256 amount) external onlyOwner {
         require(payee != address(0) && payee != address(this), "Insane addresses given");
         require(_filled, "Pool is not ready to pay");
-        if(stringCompare._compareStrings(payoutType, _payoutTypeCollector)) {
+        if(payoutType.compare(_payoutTypeCollector)) {
             require(_collectorPool >= amount, "Not enough funds!");
             _collectorPool = _collectorPool - amount;
             payee.transfer(amount);
             emit Sent(payee, _payoutTypeCollector, amount, address(this).balance);
 
-        } else if (stringCompare._compareStrings(payoutType, _payoutTypeTrader)) {
+        } else if (payoutType.compare( _payoutTypeTrader)) {
             require(_traderPool >= amount, "Not enough funds!");
             _traderPool = _traderPool - amount;
             payee.transfer(amount);
             emit Sent(payee, _payoutTypeTrader, amount, address(this).balance);
-        } else if (stringCompare._compareStrings(payoutType, _payoutTypeNFT)) {
+        } else if (payoutType.compare( _payoutTypeNFT)) {
             require(_nftPool >= amount, "Not enough funds!");
             _nftPool = _nftPool - amount;
             payee.transfer(amount);
